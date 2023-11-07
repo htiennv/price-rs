@@ -1,85 +1,67 @@
-use anyhow::Ok;
-use reqwest::blocking::Client;
+use crate::config::{Config, SymbolInfo};
 
-use crate::config::Config;
+use super::{Provider, PriceInfoMap};
 
-use super::{PriceInfo, Provider, Symbol};
-
-pub struct BinanceClient<'a> {
-    pub cfg: &'a Config,
-    pub client: Client,
+pub struct Client<'a> {
+    pub config: &'a Config,
+    pub http_client: reqwest::blocking::Client,
 }
 
-impl<'a> BinanceClient<'a> {
-    pub fn new(cfg: &'a Config, client: Client) -> Self {
-        Self { client, cfg }
-    }
-
-    pub fn get_prices_helper(&self, symbols: Vec<Symbol>) -> anyhow::Result<Vec<PriceInfo>> {
-        Ok(vec![])
+impl<'a> Client<'a> {
+    pub fn new(config: &'a Config, http_client: reqwest::blocking::Client) -> Self {
+        Self { http_client, config }
     }
 }
 
-impl<'a> Provider<'a> for BinanceClient<'a> {
-    fn get_prices(&self, symbols: Vec<Symbol>) -> anyhow::Result<Vec<PriceInfo>> {
-        Ok(vec![])
+impl<'a> Provider for Client<'a> {
+    fn get_prices(&self, symbols: Vec<SymbolInfo>) -> anyhow::Result<PriceInfoMap> {
+        todo!()
     }
 
-    fn get_name(&self) -> &'static str {
-        "binance"
+    fn get_name(&self) -> String{
+        "binance".to_owned()
+    }
+
+    fn get_weight(&self) -> f64 {
+        self.config.providers.binance.weight
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Ok;
     use serde::Deserialize;
 
     use crate::config::Config;
 
-    use super::BinanceClient;
+    use super::Client;
 
     #[test]
     fn test_call() {
         let symbols = vec!["BTCUSDT", "BNBUSDT"];
 
-        let cfg = Config::default();
-        let client = reqwest::blocking::Client::new();
+        let config = Config::default();
+        let http_client = reqwest::blocking::Client::new();
 
-        let binance = BinanceClient {
-            cfg: &cfg,
-            client: client,
+        let binance = Client {
+            config: &config,
+            http_client,
         };
 
         let url = format!(
             "{}/ticker/price?symbols={}",
-            binance.cfg.binance_url,
+            binance.config.providers.binance.url,
             serde_json::to_string(&symbols).unwrap()
         );
         println!("url={url}");
 
-        let res = binance.client.get(url).send();
-        assert!(res.is_ok());
+        let res: Vec<BinancePriceResponse> = binance.http_client.get(url).send().unwrap().json().unwrap();
+        assert_eq!(res.len(), 2);
         println!("{:?}", res);
     }
 
     #[derive(Deserialize, Debug, Clone)]
-    struct BinancePriceResp {
+    struct BinancePriceResponse {
         symbol: String,
         price: String,
-    }
-
-    fn call_basic() -> anyhow::Result<Vec<BinancePriceResp>> {
-        let url = r#"https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","BNBUSDT"]"#;
-
-        let response: Vec<BinancePriceResp> = reqwest::blocking::get(url)?.json()?;
-        Ok(response)
-    }
-
-    #[test]
-    fn test_call_basic() {
-        let res = call_basic();
-
-        println!("Response: {:?}", res.unwrap());
     }
 }

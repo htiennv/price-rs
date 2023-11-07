@@ -1,13 +1,12 @@
-use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
+use crate::config::{Config, SymbolInfo};
 
-use super::{PriceInfo, Provider, Symbol};
+use super::{Provider, PriceInfoMap};
 
 pub struct CoingeckoClient<'a> {
-    pub cfg: &'a Config,
-    pub client: Client,
+    pub config: &'a Config,
+    pub http_client: reqwest::blocking::Client,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -17,41 +16,28 @@ pub struct PriceResponse {
 }
 
 impl<'a> CoingeckoClient<'a> {
-    pub fn new(cfg: &'a Config, client: Client) -> Self {
-        Self { cfg, client }
-    }
-
-    pub fn get_prices_helper(&self, symbols: Vec<String>) -> anyhow::Result<Vec<PriceInfo>> {
-        Ok(vec![])
+    pub fn new(config: &'a Config, http_client: reqwest::blocking::Client) -> Self {
+        Self { config, http_client }
     }
 }
 
-impl<'a> Provider<'a> for CoingeckoClient<'a> {
-    fn get_prices(&self, symbols: Vec<Symbol>) -> anyhow::Result<Vec<PriceInfo>> {
+impl<'a> Provider for CoingeckoClient<'a> {
+    fn get_prices(&self, symbols: Vec<SymbolInfo>) -> anyhow::Result<PriceInfoMap> {
         todo!()
     }
 
-    fn get_name(&self) -> &'static str {
-        "coingecko"
+    fn get_name(&self) -> String {
+        "coingecko".to_owned()
+    }
+
+    fn get_weight(&self) -> f64 {
+        self.config.providers.coingecko.weight
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
-
-    use super::CoingeckoClient;
-
     #[test]
     fn test_call() {
-        let symbols = vec!["BTCUSDT", "BNBUSDT"];
-
-        let cfg = Config::default();
-        let client = reqwest::blocking::Client::new();
-
-        let cgk_client = CoingeckoClient {
-            cfg: &cfg,
-            client: client,
-        };
     }
 }
