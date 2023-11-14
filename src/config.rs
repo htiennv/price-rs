@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 
+#[derive(Debug, Clone)]
 pub struct Config {
-    pub worker_interval_secs: i64,
+    pub worker_interval_secs: u64,
     pub http_port: String,
     pub providers: Providers,
     pub symbols: Vec<SymbolInfo>,
@@ -29,38 +30,39 @@ impl Default for Config {
             },
             symbols: vec![
                 SymbolInfo {
-                    binance_id: "eth".to_owned(),
-                    coingecko_id: "ethereum".to_owned(),
+                    symbol: "eth".to_owned(),
+                    ckg_id: "ethereum".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "bnb".to_owned(),
-                    coingecko_id: "binancecoin".to_owned(),
+                    symbol: "bnb".to_owned(),
+                    ckg_id: "binancecoin".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "btc".to_owned(),
-                    coingecko_id: "bitcoin".to_owned(),
+                    symbol: "btc".to_owned(),
+                    ckg_id: "bitcoin".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "doge".to_owned(),
-                    coingecko_id: "dogecoin".to_owned(),
+                    symbol: "doge".to_owned(),
+                    ckg_id: "dogecoin".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "shib".to_owned(),
-                    coingecko_id: "shiba-inu".to_owned(),
+                    symbol: "shib".to_owned(),
+                    ckg_id: "shiba-inu".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "lunc".to_owned(),
-                    coingecko_id: "terra-luna".to_owned(),
+                    symbol: "lunc".to_owned(),
+                    ckg_id: "terra-luna".to_owned(),
                 },
                 SymbolInfo {
-                    binance_id: "usdt".to_owned(),
-                    coingecko_id: "tether".to_owned(),
+                    symbol: "usdt".to_owned(),
+                    ckg_id: "tether".to_owned(),
                 },
             ],
         }
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Providers {
     pub threshold_change: f64,
     pub binance: ProviderInfo,
@@ -68,17 +70,19 @@ pub struct Providers {
     pub okx: ProviderInfo,
 }
 
+#[derive(Debug, Clone)]
 pub struct ProviderInfo {
     pub url: String,
     pub weight: f64,
 }
 
+#[derive(Debug, Clone)]
 pub struct SymbolInfo {
-    pub binance_id: String,
-    pub coingecko_id: String,
+    // Symbol is id of a coin in lower case
+    pub symbol: String,
+    pub ckg_id: String,
 }
 
-
-pub fn parse_config(path: PathBuf) -> anyhow::Result<Config> {
+pub fn parse_config(_path: PathBuf) -> anyhow::Result<Config> {
     todo!()
 }
