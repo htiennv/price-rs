@@ -5,7 +5,7 @@ use std::{
     collections::HashMap,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc, RwLock,
     },
     time::Duration,
 };
@@ -42,7 +42,7 @@ pub struct Service {
     providers: Vec<Arc<Box<dyn Provider>>>,
     is_servable: AtomicBool,
     // A mutex map store current average prices
-    current_prices: Arc<Mutex<PriceInfoMap>>,
+    current_prices: Arc<RwLock<PriceInfoMap>>,
 }
 
 impl Service {
@@ -61,8 +61,17 @@ impl Service {
             providers,
             config: Arc::new(config),
             is_servable: AtomicBool::new(false),
-            current_prices: Arc::new(Mutex::new(PriceInfoMap::new())),
+            current_prices: Arc::new(RwLock::new(PriceInfoMap::new())),
         }
+    }
+
+    pub fn is_servable(&self) -> bool {
+        self.is_servable.load(Ordering::SeqCst)
+    }
+
+    pub fn get_prices(&self) -> anyhow::Result<PriceInfoMap> {
+        let current = self.current_prices.read().unwrap();
+        Ok(current.clone())
     }
 
     pub async fn run(&self) {
@@ -73,7 +82,7 @@ impl Service {
             match prices {
                 Ok(prices) => {
                     self.is_servable.store(true, Ordering::SeqCst);
-                    let mut guard = self.current_prices.lock().unwrap();
+                    let mut guard = self.current_prices.write().unwrap();
                     *guard = prices;
                 }
                 Err(err) => {
