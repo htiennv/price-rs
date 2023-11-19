@@ -1,8 +1,8 @@
 use axum::{extract::State, Json};
 use reqwest::StatusCode;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
-use crate::{providers::PriceInfo, app::AppState};
+use crate::{app::AppState, providers::PriceInfo};
 
 pub async fn get_prices(State(state): State<AppState>) -> Result<Json<Value>, StatusCode> {
     let service = &state;
@@ -12,7 +12,11 @@ pub async fn get_prices(State(state): State<AppState>) -> Result<Json<Value>, St
     let prices = service.get_prices().unwrap();
     let mut results = Vec::new();
     for (symbol, info) in prices {
-        results.push(PriceInfo{ symbol: symbol, price: info.price, change: info.change });
+        results.push(PriceInfo {
+            symbol: symbol,
+            price: info.price,
+            change: info.change,
+        });
     }
     results.sort_by(|r1, r2| r1.symbol.cmp(&r2.symbol));
     Ok(Json(json!({

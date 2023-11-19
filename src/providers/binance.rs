@@ -33,7 +33,6 @@ fn remove_usdt(s: &str) -> String {
 
 #[async_trait]
 impl Provider for BinanceClient {
-    
     async fn get_prices(&self, config: &Config) -> anyhow::Result<PriceInfoMap> {
         let mut has_usdt = false;
 

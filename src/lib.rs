@@ -1,4 +1,4 @@
-pub mod config;
-pub mod providers;
-pub mod handlers;
 pub mod app;
+pub mod config;
+pub mod handlers;
+pub mod providers;
